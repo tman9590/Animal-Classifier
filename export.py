@@ -36,7 +36,7 @@ traced_model = torch.jit.trace(model, inputs["pixel_values"])
 def export_openvino():
     import openvino as ov
 
-    ov_model = ov.convert_model(traced_model)
+    ov_model = ov.convert_model(traced_model, example_input=inputs["pixel_values"])
 
     path = "models/openvino"
     os.system(f"rm -rf {path}")
@@ -86,8 +86,6 @@ def export_onnx():
         input_names=["input"],
     )
 
-    os.system(f"mv model.onnx {path}/model.onnx")
-
     model_config["files"] = [
         f"model.onnx",
     ]
@@ -107,7 +105,7 @@ def export_ncnn():
 # some exports may not work depending on the model or host operating system.
 # openvino may require intel system.
 # ncnn has limited model/op support.
-# export_openvino()
-# export_coreml()
+export_openvino()
+export_coreml()
 export_onnx()
 # export_ncnn()
