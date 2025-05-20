@@ -1,6 +1,3 @@
-import pnnx
-import coremltools as ct
-import openvino as ov
 import os
 import json
 import torch
@@ -37,13 +34,13 @@ traced_model = torch.jit.trace(model, inputs["pixel_values"])
 
 
 def export_openvino():
-    # Convert model to openvino.runtime.Model object
+    import openvino as ov
+
     ov_model = ov.convert_model(traced_model)
 
     path = "openvino"
     os.system(f"rm -rf {path}")
 
-    # Save openvino.runtime.Model object on disk
     ov.save_model(ov_model, f"{path}/model.xml")
     model_config["files"] = [
         f"{path}/model.xml",
@@ -54,6 +51,8 @@ def export_openvino():
         json.dump(model_config, f)
 
 def export_coreml():
+    import coremltools as ct
+
     path = "coreml"
     os.system(f"rm -rf {path}")
     
@@ -104,7 +103,11 @@ def export_ncnn():
     os.system(f"pnnx {path}/model.pt 'inputshape={input_shape_str}'")
 
 
-# export_openvino()
-# export_coreml()
-# export_onnx()
+# comment/uncomment the ones you want to export.
+# some exports may not work depending on the model or host operating system.
+# openvino may require intel system.
+# ncnn has limited model/op support.
+export_openvino()
+export_coreml()
+export_onnx()
 export_ncnn()
