@@ -43,8 +43,8 @@ def export_openvino():
 
     ov.save_model(ov_model, f"{path}/model.xml")
     model_config["files"] = [
-        f"{path}/model.xml",
-        f"{path}/model.bin"
+        f"model.xml",
+        f"model.bin"
     ]
 
     with open(f"{path}/config.json", "w") as f:
@@ -65,9 +65,9 @@ def export_coreml():
     model.save(path + "/model.mlpackage")
 
     model_config["files"] = [
-        f"{path}/model.mlpackage/Manifest.json",
-        f"{path}/model.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
-        f"{path}/model.mlpackage/Data/com.apple.CoreML/model.mlmodel",
+        f"model.mlpackage/Manifest.json",
+        f"model.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
+        f"model.mlpackage/Data/com.apple.CoreML/model.mlmodel",
     ]
     with open(f"{path}/config.json", "w") as f:
         json.dump(model_config, f)
@@ -89,7 +89,7 @@ def export_onnx():
     os.system(f"mv model.onnx {path}/model.onnx")
 
     model_config["files"] = [
-        f"{path}/model.onnx",
+        f"model.onnx",
     ]
     with open(f"{path}/config.json", "w") as f:
         json.dump(model_config, f)
