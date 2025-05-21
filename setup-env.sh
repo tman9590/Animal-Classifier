@@ -6,7 +6,4 @@ fi
 
 . .venv/bin/activate
 # needed for export
-pip install openvino==2024.5.0 coremltools ncnn pnnx onnx
-
-# needed for this hugging face project specifically
-pip install transformers Pillow
+pip install openvino coremltools ncnn pnnx onnx
