@@ -1,0 +1,35 @@
+name: Validate species model pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install Pillow==11.3.0 numpy==2.2.6
+      - run: python -m unittest discover -s tests -v
+      - run: python -m compileall -q distill tests
+      - name: Validate Scrypted configs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          catalog = json.loads(Path('species/north-carolina.json').read_text())
+          assert len(catalog['species']) >= 500
+          assert catalog['labels'][-1] == 'unknown'
+          assert len(catalog['labels']) == len(catalog['species']) + 1
+          assert len(set(catalog['labels'])) == len(catalog['labels'])
+          for backend in ('coreml', 'openvino'):
+              config_path = Path('models') / backend / 'config.json'
+              config = json.loads(config_path.read_text())
+              assert config['model'] == 'yolov9'
+              assert config['input_shape'] == [1, 3, 640, 640]
+              assert list(config['labels'].values()) == catalog['labels']
+          PY

@@ -1,3 +1,8 @@
 .venv/
+work/
+runs/
 *.pnnx.*
 model.pt
+*.pt
+__pycache__/
+*.pyc

@@ -1,0 +1,11 @@
+coremltools==9.0
+ncnn==1.0.20260526
+onnx==1.19.1
+onnxruntime==1.19.2
+open-clip-torch==3.2.0
+opencv-python-headless==4.13.0.92
+openvino==2025.3.0
+pnnx==20260526
+torch==2.8.0
+torchvision==0.23.0
+ultralytics==8.4.41

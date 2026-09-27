@@ -1,9 +1,11 @@
-cd $(dirname $0)
-if [ ! -f .venv/bin/activate ]
-then
+#!/bin/sh
+set -eu
+
+cd "$(dirname "$0")"
+if [ ! -f .venv/bin/activate ]; then
     python3 -m venv .venv
 fi
 
 . .venv/bin/activate
-# needed for export
-pip install openvino coremltools ncnn pnnx onnx
+python -m pip install --upgrade pip
+python -m pip install -r requirements-build.txt

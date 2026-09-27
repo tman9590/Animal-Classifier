@@ -1,0 +1,36 @@
+{
+  "region": "North Carolina, USA",
+  "inaturalist_place_id": 30,
+  "iconic_taxa": [
+    "Mammalia",
+    "Aves",
+    "Reptilia",
+    "Amphibia"
+  ],
+  "maximum_species": 1000,
+  "minimum_inaturalist_observations": 20,
+  "required_species": [
+    {"taxon_id": 505478, "scientific_name": "Gallus gallus domesticus", "common_name": "Domestic Chicken", "iconic_taxon": "Aves"},
+    {"taxon_id": 906, "scientific_name": "Meleagris gallopavo", "common_name": "Turkey", "iconic_taxon": "Aves"},
+    {"taxon_id": 236935, "scientific_name": "Anas platyrhynchos domesticus", "common_name": "Domestic Mallard", "iconic_taxon": "Aves"},
+    {"taxon_id": 7120, "scientific_name": "Cairina moschata", "common_name": "Muscovy Duck", "iconic_taxon": "Aves"},
+    {"taxon_id": 120479, "scientific_name": "Anser anser domesticus", "common_name": "Domestic Greylag Goose", "iconic_taxon": "Aves"},
+    {"taxon_id": 333822, "scientific_name": "Anser cygnoides domesticus", "common_name": "Domestic Swan Goose", "iconic_taxon": "Aves"},
+    {"taxon_id": 1428, "scientific_name": "Numida meleagris", "common_name": "Helmeted Guineafowl", "iconic_taxon": "Aves"},
+    {"taxon_id": 1204, "scientific_name": "Pavo cristatus", "common_name": "Indian Peafowl", "iconic_taxon": "Aves"},
+    {"taxon_id": 804, "scientific_name": "Coturnix coturnix", "common_name": "Common Quail", "iconic_taxon": "Aves"},
+    {"taxon_id": 791, "scientific_name": "Coturnix japonica", "common_name": "Japanese Quail", "iconic_taxon": "Aves"},
+    {"taxon_id": 981, "scientific_name": "Phasianus colchicus", "common_name": "Ring-necked Pheasant", "iconic_taxon": "Aves"},
+    {"taxon_id": 122767, "scientific_name": "Columba livia domestica", "common_name": "Domestic Pigeon", "iconic_taxon": "Aves"},
+    {"taxon_id": 20504, "scientific_name": "Dromaius novaehollandiae", "common_name": "Emu", "iconic_taxon": "Aves"},
+    {"taxon_id": 20526, "scientific_name": "Struthio camelus", "common_name": "Ostrich", "iconic_taxon": "Aves"}
+  ],
+  "observations_per_species": 20,
+  "megadetector_threshold": 0.25,
+  "bioclip_unknown_threshold": 0.25,
+  "temporal_smoothing_alpha": 0.35,
+  "track_iou_threshold": 0.3,
+  "track_ttl_frames": 30,
+  "student_model": "yolo11s.pt",
+  "image_size": 640
+}
