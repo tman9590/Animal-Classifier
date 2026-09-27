@@ -6,11 +6,6 @@
     640
   ],
   "model": "yolov9",
-  "files": [
-    "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/model.mlmodel",
-    "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
-    "north-carolina-wildlife.mlpackage/Manifest.json"
-  ],
   "labels": {
     "0": "Eastern Gray Squirrel",
     "1": "Green Anole",
@@ -542,5 +537,10 @@
     "527": "Helmeted Guineafowl",
     "528": "Ostrich",
     "529": "unknown"
-  }
+  },
+  "files": [
+    "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/model.mlmodel",
+    "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
+    "north-carolina-wildlife.mlpackage/Manifest.json"
+  ]
 }

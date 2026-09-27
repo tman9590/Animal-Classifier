@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "class_count": 530,
+  "input_shape": [
+    1,
+    3,
+    640,
+    640
+  ],
+  "backends": {
+    "coreml": {
+      "artifacts": {
+        "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/model.mlmodel": {
+          "bytes": 172687,
+          "sha256": "73243efe118908225ee07a8fbe840ce45886bdf9f57adb6972270423791f344f"
+        },
+        "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/weights/weight.bin": {
+          "bytes": 19297760,
+          "sha256": "46b1ef3cd0e935a6380f6463b0f6c22ccf9f73a6ead8769f699adff0cc0bce72"
+        },
+        "north-carolina-wildlife.mlpackage/Manifest.json": {
+          "bytes": 617,
+          "sha256": "29ccf4ef3fda3d37ce49776ea85c26c76b03105fb49fccc2c6e67c989b3a7b49"
+        }
+      },
+      "samples": [
+        {
+          "image_sha256": "fbc5a51f2e95146ac5649503a3044ef241ecee4a4b1be79c7dfffcd213a7fc02",
+          "latency_seconds": 0.41326004200001876,
+          "max_score_error": 4.679604899138212e-06,
+          "max_box_error_pixels": 2.4864501953125
+        },
+        {
+          "image_sha256": "736dd8a51205dfe4670b6db805accaee77e6c61490b71cd01d3ac77f5b10cfb8",
+          "latency_seconds": 0.24308262499999955,
+          "max_score_error": 1.3864977518096566e-05,
+          "max_box_error_pixels": 2.17236328125
+        },
+        {
+          "image_sha256": "29bd0af49abc44dac789ee4dde184f09b694d84cca98874d9118669cacaf6811",
+          "latency_seconds": 0.21541083300002128,
+          "max_score_error": 1.1653464753180742e-05,
+          "max_box_error_pixels": 1.79681396484375
+        }
+      ]
+    }
+  },
+  "scope": "Backend runtime and raw-output parity; not camera accuracy or server integration"
+}
