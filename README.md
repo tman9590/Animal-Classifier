@@ -118,11 +118,22 @@ species list.
    `https://github.com/tman9590/scrypted-animal-classifier`.
 5. Select the created model for the camera's Scrypted NVR object detection.
 
-Scrypted resolves the repository URL to `models/<backend>/config.json`. Those
-configs identify the output as YOLO-compatible and provide the complete class
-map. The CoreML and OpenVINO configs are checked in and can be regenerated from
-the catalog with `python3 distill/generate_configs.py`. Scientific names remain
-in the catalog and BioCLIP prompts but are not shown in Scrypted detections.
+The root [`config.json`](config.json) is the single source of truth for the
+input shape, YOLO format, complete class map, and files used by all four
+backends. Scrypted currently resolves a repository URL to
+`models/<backend>/config.json`, so `python3 distill/generate_configs.py`
+projects the root manifest into those small backend-specific compatibility
+files. Do not edit those projections by hand. Scientific names remain in the
+catalog and BioCLIP prompts but are not shown in Scrypted detections.
+
+After changing the root manifest, regenerate the compatibility views with:
+
+```sh
+python3 distill/generate_configs.py
+```
+
+If the species catalog or standard artifact names change, rebuild the root
+manifest explicitly with `python3 distill/generate_configs.py --refresh-root`.
 
 ## Validation
 

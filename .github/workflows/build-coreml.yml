@@ -1,0 +1,52 @@
+name: Build and validate CoreML model
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - models/source/north-carolina-wildlife.pt
+      - distill/export_scrypted.py
+      - distill/validate_exports.py
+      - .github/workflows/build-coreml.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  coreml:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install exporter
+        run: pip install ultralytics==8.4.41 coremltools==9.0 numpy==2.2.6 Pillow==12.3.0
+      - name: Export CoreML
+        run: python distill/export_scrypted.py models/source/north-carolina-wildlife.pt --backends coreml
+      - name: Create deterministic parity samples
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import numpy as np
+          from PIL import Image
+          root = Path('work/coreml-validation')
+          root.mkdir(parents=True, exist_ok=True)
+          rng = np.random.default_rng(360)
+          for index in range(3):
+              pixels = rng.integers(0, 256, (640, 640, 3), dtype=np.uint8)
+              Image.fromarray(pixels).save(root / f'sample-{index}.jpg', quality=95)
+          PY
+      - name: Validate CoreML parity
+        run: |
+          python distill/validate_exports.py models/source/north-carolina-wildlife.pt \
+            --images work/coreml-validation --backends coreml --samples 3 \
+            --report models/coreml/validation.json
+      - name: Commit validated artifact
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -f models/coreml
+          git diff --cached --quiet || git commit -m 'Build validated CoreML wildlife model'
+          git push

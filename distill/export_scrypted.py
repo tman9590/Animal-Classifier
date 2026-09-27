@@ -63,9 +63,17 @@ def main() -> None:
     trained_labels = [model.names[index] for index in range(len(model.names))]
     if trained_labels != labels:
         raise ValueError("Checkpoint class order does not match the catalog; refusing mislabeled export")
+    failures = []
     for backend in args.backends:
         print(f"Exporting {backend}")
-        export_backend(model, backend, labels, args.image_size)
+        try:
+            export_backend(model, backend, labels, args.image_size)
+        except Exception as error:
+            failures.append((backend, error))
+            print(f"Failed to export {backend}: {error}")
+    if failures:
+        summary = ", ".join(f"{backend}: {error}" for backend, error in failures)
+        raise RuntimeError(f"One or more backend exports failed ({summary})")
 
 
 if __name__ == "__main__":

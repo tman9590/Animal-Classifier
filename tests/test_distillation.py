@@ -42,19 +42,33 @@ class DistillationTests(unittest.TestCase):
     def test_scrypted_backend_configs_match_catalog(self):
         metadata, _ = read_catalog(ROOT / "species" / "north-carolina.json")
         expected_files = {
+            "onnx": ["north-carolina-wildlife.onnx"],
             "coreml": [
                 "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/model.mlmodel",
                 "north-carolina-wildlife.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
                 "north-carolina-wildlife.mlpackage/Manifest.json",
             ],
             "openvino": ["north-carolina-wildlife.xml", "north-carolina-wildlife.bin"],
+            "ncnn": ["north-carolina-wildlife.ncnn.param", "north-carolina-wildlife.ncnn.bin"],
         }
+        root_config = json.loads((ROOT / "config.json").read_text())
+        self.assertEqual(root_config["input_shape"], [1, 3, 640, 640])
+        self.assertEqual(root_config["model"], "yolov9")
+        self.assertEqual(list(root_config["labels"].values()), metadata["labels"])
+        self.assertEqual(
+            {backend: value["files"] for backend, value in root_config["backends"].items()},
+            expected_files,
+        )
         for backend, files in expected_files.items():
             config = json.loads((ROOT / "models" / backend / "config.json").read_text())
             self.assertEqual(config["input_shape"], [1, 3, 640, 640])
             self.assertEqual(config["model"], "yolov9")
             self.assertEqual(config["files"], files)
             self.assertEqual(list(config["labels"].values()), metadata["labels"])
+            self.assertEqual(
+                {key: config[key] for key in ("input_shape", "model", "labels")},
+                {key: root_config[key] for key in ("input_shape", "model", "labels")},
+            )
 
     def test_temporal_smoothing_and_unknown_threshold(self):
         smoother = TemporalSmoother(alpha=0.5, match_iou=0.3, ttl_frames=10, unknown_threshold=0.7)
