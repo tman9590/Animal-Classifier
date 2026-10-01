@@ -1,10 +1,7 @@
 .venv/
 work/
-runs/
 *.pnnx.*
 model.pt
 *.pt
-!models/source/
-!models/source/north-carolina-wildlife.pt
 __pycache__/
 *.pyc

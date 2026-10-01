@@ -1,0 +1,374 @@
+{
+  "passed": true,
+  "source_version": "4.0.3a",
+  "class_count": 2498,
+  "input_shape": [
+    1,
+    3,
+    480,
+    480
+  ],
+  "sample_count": 10,
+  "backends": {
+    "coreml": {
+      "artifacts": {
+        "models\\coreml\\speciesnet-v4.0.3a.mlpackage\\Data\\com.apple.CoreML\\model.mlmodel": {
+          "bytes": 506838,
+          "sha256": "07aa3eb6d11a57ce715cff5d08948b6e3e5d8359acfecadabadf72516b63b0af"
+        },
+        "models\\coreml\\speciesnet-v4.0.3a.mlpackage\\Data\\com.apple.CoreML\\weights\\weight.bin": {
+          "bytes": 111859204,
+          "sha256": "3d88fdc5780cd262e83c96c9cdb25a16d72db9effa44c785877e5fd11901dd1f"
+        },
+        "models\\coreml\\speciesnet-v4.0.3a.mlpackage\\Manifest.json": {
+          "bytes": 617,
+          "sha256": "d6a78f6ce1e8885d20f758afef1d1eeb634c9a934432d7263e95cc432f858d28"
+        }
+      },
+      "samples": [],
+      "validation": "artifact integrity and Core ML specification; inference requires macOS"
+    },
+    "ncnn": {
+      "artifacts": {
+        "models\\ncnn\\speciesnet-v4.0.3a.ncnn.bin": {
+          "bytes": 112258208,
+          "sha256": "ecea811885b595644b7d27c58a4b1e48cc73054416e5ad4278135441442ff7ce"
+        },
+        "models\\ncnn\\speciesnet-v4.0.3a.ncnn.param": {
+          "bytes": 58384,
+          "sha256": "6d797c286d504a887bbd113e2a883053af758d0d164cbb4e3889c8fdec9abdf0"
+        }
+      },
+      "samples": [
+        {
+          "image_sha256": "19cd899b473d99fc855bc34369a55860d3b15780c65d42b7b57585fd24d81402",
+          "latency_seconds": 0.15260879998095334,
+          "source_top1": "african elephant",
+          "export_top1": "african elephant",
+          "source_top1_probability": 0.5072876312674389,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.00196630985747831
+        },
+        {
+          "image_sha256": "e57fa027142f3e0adaff7b9496c81574c4376233311708a2b54c9cfbbf499140",
+          "latency_seconds": 0.14144710003165528,
+          "source_top1": "domestic cattle",
+          "export_top1": "domestic cattle",
+          "source_top1_probability": 0.17018177316284047,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.0033422784314081355
+        },
+        {
+          "image_sha256": "6bc5ed90d8697f7eccceef3f27944e51d5945c5a98b975afabbc21d0f23ac790",
+          "latency_seconds": 0.13938119995873421,
+          "source_top1": "african elephant",
+          "export_top1": "african elephant",
+          "source_top1_probability": 0.5005935788547493,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.001961784504587283
+        },
+        {
+          "image_sha256": "ea63d15ab44a34907392bac3328a4d25e7d6c46ba30a3e40709be4d4be1b13be",
+          "latency_seconds": 0.13972809998085722,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.9931188367059498,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.00012319649132574995
+        },
+        {
+          "image_sha256": "49cae6c6be95198c6d1c0ae50f4589372dc01a606951a22841a6939ff9d0cd17",
+          "latency_seconds": 0.14078209997387603,
+          "source_top1": "american black bear",
+          "export_top1": "american black bear",
+          "source_top1_probability": 0.9501053976982563,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.00036083992280021293
+        },
+        {
+          "image_sha256": "a40f7aa3218040d6e9445617de066d05c2d6e8109fa6ad269f5c96e715bba710",
+          "latency_seconds": 0.14029820001451299,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.9997026387871609,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.196327465646796e-06
+        },
+        {
+          "image_sha256": "ca69d5aa34a3b363dcdb086b763ef9451b22068fb1b02179b4fa076cf3d4f663",
+          "latency_seconds": 0.14090050000231713,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.994727737938789,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 2.6364551027002747e-05
+        },
+        {
+          "image_sha256": "888e03f2ba87a759d07e770b1485ce8a45f849d2981e3a877ecd01d88674b258",
+          "latency_seconds": 0.13945519999833778,
+          "source_top1": "domestic dog",
+          "export_top1": "domestic dog",
+          "source_top1_probability": 0.9988470031606705,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.0491876574425518e-05
+        },
+        {
+          "image_sha256": "704413ff21ba6af9ae1c509ad7c7460e3f8f6cbfb6411ba61a1330432de71687",
+          "latency_seconds": 0.139365800016094,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.8888714256875455,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.0017518560494660385
+        },
+        {
+          "image_sha256": "5d7dcdf80df5a62c85a1521e7f800cda53944b2ba27aa70528dcd95a823f29c3",
+          "latency_seconds": 0.1427455999655649,
+          "source_top1": "vehicle",
+          "export_top1": "vehicle",
+          "source_top1_probability": 0.9997864981817756,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.7637595428610098e-07
+        }
+      ],
+      "validation": "source/export inference parity"
+    },
+    "onnx": {
+      "artifacts": {
+        "models\\onnx\\speciesnet-v4.0.3a.onnx": {
+          "bytes": 224025652,
+          "sha256": "94690a919f02c94be68599c1c80b132afb2c9a51d38c9ee0a3071408621f89f6"
+        }
+      },
+      "samples": [
+        {
+          "image_sha256": "19cd899b473d99fc855bc34369a55860d3b15780c65d42b7b57585fd24d81402",
+          "latency_seconds": 0.11530230002244934,
+          "source_top1": "african elephant",
+          "export_top1": "african elephant",
+          "source_top1_probability": 0.5072876312674389,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 5.493161152614334e-07
+        },
+        {
+          "image_sha256": "e57fa027142f3e0adaff7b9496c81574c4376233311708a2b54c9cfbbf499140",
+          "latency_seconds": 0.11195409996435046,
+          "source_top1": "domestic cattle",
+          "export_top1": "domestic cattle",
+          "source_top1_probability": 0.17018177316284047,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 3.7818351372731485e-07
+        },
+        {
+          "image_sha256": "6bc5ed90d8697f7eccceef3f27944e51d5945c5a98b975afabbc21d0f23ac790",
+          "latency_seconds": 0.11145189998205751,
+          "source_top1": "african elephant",
+          "export_top1": "african elephant",
+          "source_top1_probability": 0.5005935788547493,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.6052003490862887e-06
+        },
+        {
+          "image_sha256": "ea63d15ab44a34907392bac3328a4d25e7d6c46ba30a3e40709be4d4be1b13be",
+          "latency_seconds": 0.11188470001798123,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.9931188367059498,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 2.375275709454172e-08
+        },
+        {
+          "image_sha256": "49cae6c6be95198c6d1c0ae50f4589372dc01a606951a22841a6939ff9d0cd17",
+          "latency_seconds": 0.11182940000435337,
+          "source_top1": "american black bear",
+          "export_top1": "american black bear",
+          "source_top1_probability": 0.9501053976982563,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 4.126090125122772e-07
+        },
+        {
+          "image_sha256": "a40f7aa3218040d6e9445617de066d05c2d6e8109fa6ad269f5c96e715bba710",
+          "latency_seconds": 0.11212529998738319,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.9997026387871609,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.4290768568514522e-09
+        },
+        {
+          "image_sha256": "ca69d5aa34a3b363dcdb086b763ef9451b22068fb1b02179b4fa076cf3d4f663",
+          "latency_seconds": 0.11253680003574118,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.994727737938789,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.2269667060138545e-08
+        },
+        {
+          "image_sha256": "888e03f2ba87a759d07e770b1485ce8a45f849d2981e3a877ecd01d88674b258",
+          "latency_seconds": 0.11203339998610318,
+          "source_top1": "domestic dog",
+          "export_top1": "domestic dog",
+          "source_top1_probability": 0.9988470031606705,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.6873149988327896e-08
+        },
+        {
+          "image_sha256": "704413ff21ba6af9ae1c509ad7c7460e3f8f6cbfb6411ba61a1330432de71687",
+          "latency_seconds": 0.10888569999951869,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.8888714256875455,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 3.578327349429422e-07
+        },
+        {
+          "image_sha256": "5d7dcdf80df5a62c85a1521e7f800cda53944b2ba27aa70528dcd95a823f29c3",
+          "latency_seconds": 0.1122345999465324,
+          "source_top1": "vehicle",
+          "export_top1": "vehicle",
+          "source_top1_probability": 0.9997864981817756,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 2.5700974681797106e-10
+        }
+      ],
+      "validation": "source/export inference parity"
+    },
+    "openvino": {
+      "artifacts": {
+        "models\\openvino\\speciesnet-v4.0.3a.xml": {
+          "bytes": 1117776,
+          "sha256": "e0d528d041981ac2e38f1a9cc3ac2fd9bc529397d0ade3f5ab2cb2da13694f93"
+        },
+        "models\\openvino\\speciesnet-v4.0.3a.bin": {
+          "bytes": 111824640,
+          "sha256": "05d41f67cb504ce1dd0d0874acb828df0ae74641ed9fd54b3590d004a4c7c7ca"
+        }
+      },
+      "samples": [
+        {
+          "image_sha256": "19cd899b473d99fc855bc34369a55860d3b15780c65d42b7b57585fd24d81402",
+          "latency_seconds": 0.08664180000778288,
+          "source_top1": "african elephant",
+          "export_top1": "african elephant",
+          "source_top1_probability": 0.5072876312674389,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.00037300039436521937
+        },
+        {
+          "image_sha256": "e57fa027142f3e0adaff7b9496c81574c4376233311708a2b54c9cfbbf499140",
+          "latency_seconds": 0.09628900000825524,
+          "source_top1": "domestic cattle",
+          "export_top1": "domestic cattle",
+          "source_top1_probability": 0.17018177316284047,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.0006348636770947894
+        },
+        {
+          "image_sha256": "6bc5ed90d8697f7eccceef3f27944e51d5945c5a98b975afabbc21d0f23ac790",
+          "latency_seconds": 0.0986964000039734,
+          "source_top1": "african elephant",
+          "export_top1": "african elephant",
+          "source_top1_probability": 0.5005935788547493,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.0003942351656852916
+        },
+        {
+          "image_sha256": "ea63d15ab44a34907392bac3328a4d25e7d6c46ba30a3e40709be4d4be1b13be",
+          "latency_seconds": 0.09651929995743558,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.9931188367059498,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 3.64144416137302e-05
+        },
+        {
+          "image_sha256": "49cae6c6be95198c6d1c0ae50f4589372dc01a606951a22841a6939ff9d0cd17",
+          "latency_seconds": 0.09373309998773038,
+          "source_top1": "american black bear",
+          "export_top1": "american black bear",
+          "source_top1_probability": 0.9501053976982563,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.0006533984229638579
+        },
+        {
+          "image_sha256": "a40f7aa3218040d6e9445617de066d05c2d6e8109fa6ad269f5c96e715bba710",
+          "latency_seconds": 0.09661469998536631,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.9997026387871609,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 1.4299263043637822e-06
+        },
+        {
+          "image_sha256": "ca69d5aa34a3b363dcdb086b763ef9451b22068fb1b02179b4fa076cf3d4f663",
+          "latency_seconds": 0.10273259994573891,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.994727737938789,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 9.40229854395902e-06
+        },
+        {
+          "image_sha256": "888e03f2ba87a759d07e770b1485ce8a45f849d2981e3a877ecd01d88674b258",
+          "latency_seconds": 0.0975717999972403,
+          "source_top1": "domestic dog",
+          "export_top1": "domestic dog",
+          "source_top1_probability": 0.9988470031606705,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 3.474387587854011e-06
+        },
+        {
+          "image_sha256": "704413ff21ba6af9ae1c509ad7c7460e3f8f6cbfb6411ba61a1330432de71687",
+          "latency_seconds": 0.09849509998457506,
+          "source_top1": "blank",
+          "export_top1": "blank",
+          "source_top1_probability": 0.8888714256875455,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 0.000117713203189318
+        },
+        {
+          "image_sha256": "5d7dcdf80df5a62c85a1521e7f800cda53944b2ba27aa70528dcd95a823f29c3",
+          "latency_seconds": 0.10394420003285632,
+          "source_top1": "vehicle",
+          "export_top1": "vehicle",
+          "source_top1_probability": 0.9997864981817756,
+          "top1_match": true,
+          "top5_overlap": 5,
+          "max_probability_error": 4.5156057859596643e-07
+        }
+      ],
+      "validation": "source/export inference parity"
+    }
+  },
+  "scope": "Artifact integrity and source/export inference parity; not site-specific species accuracy."
+}

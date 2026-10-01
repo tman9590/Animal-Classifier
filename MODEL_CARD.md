@@ -1,63 +1,64 @@
-# Model card: North Carolina Species Detector
+# Model card: SpeciesNet v4.0.3a for Scrypted
 
-## Intended behavior
+## Intended use
 
-The deployable model is a single-stage object detector for Scrypted NVR. Each
-box receives one of 529 North Carolina wildlife and poultry labels or
-`unknown`. Deployed labels use species-level common names. Scientific names are
-retained in the catalog and teacher prompts but are not shown in Scrypted.
+This package classifies an animal crop supplied by Scrypted. It does not detect
+or localize animals by itself. Labels are intended for NVR metadata, search,
+and notification assistance.
 
-## Teacher and student
+## Source model and training domain
 
-Pseudo-labels are produced by MegaDetector V6 compact and BioCLIP 2. For camera
-clips, detections are associated by bounding-box overlap and BioCLIP
-probabilities are smoothed with an exponential moving average. A track becomes
-`unknown` below the configured confidence threshold. These annotations train a
-YOLO11 Small student that is exported to the tensor layouts consumed by
-Scrypted's existing custom-object-detection parser.
+- Upstream: Google SpeciesNet v4.0.3a, always-crop variant
+- Architecture: EfficientNet V2 M
+- Input: one tightly cropped 480 × 480 RGB image
+- Output: 2,498 logits
+- Training domain: more than 65 million geographically diverse camera-trap
+  images, including Wildlife Insights and public repositories
 
-The deployed student does not execute BioCLIP or query iNaturalist. Its class
-list is fixed at training time. Rebuilding the catalog and retraining are
-required to change regions or add species.
+Google reports that the full SpeciesNet ensemble found 99.4% of held-out
+images containing animals, produced species-level labels for 83%, and was
+correct on 94.5% of those species-level predictions. Those figures describe
+the upstream ensemble and test set, not this Scrypted conversion or a specific
+home-camera deployment.
 
-## Geographic and taxonomic scope
+The vocabulary includes species, higher taxa, human, vehicle, and blank. Four
+rows without common names use scientific names. Duplicate common names are
+disambiguated without changing output indices.
 
-The vocabulary is derived from research-grade observations within iNaturalist
-place 30, North Carolina, USA. It contains terrestrial vertebrates in
-Mammalia, Aves, Reptilia, and Amphibia with at least 20 observations, plus an
-explicit poultry list. Marine fish, invertebrates, and taxa with sparse North
-Carolina evidence are outside the default scope.
+## Scrypted conversion
 
-Presence in the list means that a taxon has been observed in North Carolina. It
-does not mean that the species is plausible at every address, habitat, season,
-or time of day in the state.
+Scrypted converts RGB crops to NCHW float values in `[0, 1]`. A wrapper
+permutes that tensor to the NHWC layout expected by SpeciesNet. The four
+manifests use Scrypted's `resnet` classifier parser with identity
+normalization. Artifacts are supplied for ONNX, OpenVINO, CoreML, and NCNN.
 
-## Confidence and unknown
+Scrypted runs the classifier without SpeciesNet's optional geographic and date
+roll-up. The raw visual classifier can therefore propose an animal that looks
+similar but is geographically implausible.
 
-The BioCLIP threshold controls pseudo-label creation, not a calibrated
-probability that a species is present. The student learns `unknown` from animal
-boxes that the teacher cannot classify confidently. Its runtime score is also
-not a calibrated biological probability.
+## Validation status
+
+ONNX, OpenVINO, and NCNN were compared with the source PyTorch checkpoint on
+ten official SpeciesNet test images. A build is rejected when a prediction at
+or above Scrypted's default `0.50` threshold changes, top-five overlap falls
+below four, probability drift exceeds `0.10`, output contains non-finite
+values, or a configured artifact is absent. CoreML package integrity and model
+I/O were validated on Windows; runtime inference validation requires macOS.
+
+The saved report is build evidence, not a benchmark. Deployments should keep a
+labeled holdout of their own Scrypted crops and report per-class precision and
+recall across cameras and lighting conditions.
 
 ## Limitations
 
-- Species with similar appearance, hybrids, juveniles, domestic breeds, and
-  partial views are likely confusion pairs.
-- Night vision, small subjects, motion blur, rain, backlighting, and animals at
-  the frame edge reduce accuracy.
-- iNaturalist and BioCLIP training data are long-tailed. Frequently photographed
-  birds and mammals have more evidence than secretive species.
-- A class list with hundreds of species increases fine-grained coverage but
-  requires substantial examples per class. Sparse classes should remain
-  experimental until validated on held-out footage.
-- IoU association can switch identities when animals cross. Smoothing may also
-  delay a correct label after an early error.
-- The model is for notification and search assistance. It is not evidence for
-  a scientific record, wildlife-management decision, or safety-critical action.
+- Similar species, domestic breeds, juveniles, partial animals, and tiny crops
+  can be confused.
+- Residential cameras differ from camera traps in mounting, compression,
+  infrared illumination, motion blur, and subject distance.
+- A result may be a family/order label rather than a species when the image is
+  ambiguous.
+- Softmax confidence is not a calibrated biological probability.
+- The classifier cannot count or distinguish individual animals.
 
-## Required validation
-
-Measure per-class precision and recall on clips excluded from training. Report
-macro averages so common species do not hide failures on rare ones. Maintain a
-confusion matrix, unknown recall, day/night slices, and separate results for
-wild birds, poultry, mammals, reptiles, and amphibians.
+Use results as search metadata and alert assistance, not as scientific evidence
+or for safety-critical wildlife decisions.

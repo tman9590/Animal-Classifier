@@ -1,154 +1,96 @@
-# North Carolina Species Detector for Scrypted
+# SpeciesNet Animal Classifier for Scrypted
 
-This repository builds a single-stage species detector that can be loaded by
-Scrypted's **current Object Detection plugin**. The final deployed model uses
-the existing Scrypted custom-model contract (`model: yolov9`); it does not
-require a separate Scrypted plugin.
+This repository packages Google's **SpeciesNet v4.0.3a** crop classifier for
+every Scrypted backend that currently supports repository-based custom models:
 
-> **Build status:** the regional catalog and complete teacher, training, and
-> export pipeline are ready. Exported Scrypted weights are intentionally not
-> present on this development branch until representative camera clips have
-> been pseudo-labeled and the student has passed held-out validation.
+| Scrypted backend | Typical hardware | Artifact |
+| --- | --- | --- |
+| ONNX | NVIDIA GPU, Windows/Linux CPU | ONNX |
+| OpenVINO | Intel/AMD CPU, GPU, or NPU | OpenVINO IR |
+| CoreML | Apple Silicon Neural Engine | Core ML package |
+| NCNN | Vulkan-capable GPU | NCNN |
 
-## Species coverage
+TensorFlow Lite is not listed because its Scrypted plugin does not currently
+expose the custom GitHub-model loader used by these four plugins.
 
-The checked-in North Carolina catalog contains **529 animal taxa plus
-`unknown`**. Every deployed result is a concise species-level common name, for
-example:
+## Why SpeciesNet
 
-```text
-White-tailed Deer
-Northern Cardinal
-Domestic Chicken
+The original request pointed to an animal re-identification dataset catalog.
+Re-identification answers “is this the same individual?” and is a poor fit for
+Scrypted's animal-classifier slot, which expects a fixed class label for an
+already detected animal crop.
+
+SpeciesNet is the better fit: Google trained it on more than 65 million
+geographically diverse camera-trap images. The v4.0.3a “always crop” classifier
+expects a tightly cropped 480 × 480 animal image, matching the crop Scrypted
+passes to an animal classifier. It returns 2,498 taxonomy labels, including
+2,066 species plus useful higher taxa, `blank`, `human`, and `vehicle`.
+
+This is a second-stage classifier. Scrypted's selected object detector still
+finds the animal and supplies the crop; SpeciesNet adds the species label used
+for NVR search and notifications.
+
+## Install in Scrypted
+
+1. Install the detector plugin suited to the server: ONNX, OpenVINO, CoreML,
+   or NCNN.
+2. Open that plugin, find **Models**, and choose **Create Device**.
+3. Name it `SpeciesNet Animals`.
+4. Paste the configuration URL for the plugin you opened:
+
+   - ONNX: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/onnx/config.json`
+   - OpenVINO: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/openvino/config.json`
+   - CoreML: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/coreml/config.json`
+   - NCNN: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/ncnn/config.json`
+
+5. Select the new device as the camera's **Animal Classifier** in Scrypted NVR.
+6. Start with a classification threshold of `0.50`, then review real day and
+   night events before using species labels in alerts.
+
+Use the `media.githubusercontent.com` URL exactly as shown. The weights are in
+Git LFS; GitHub's ordinary raw URLs return tiny LFS pointer files instead of the
+model bytes. Each backend directory contains its own manifest and only the
+files that its loader understands.
+
+## Validation
+
+The checked-in ONNX, OpenVINO, and NCNN artifacts passed source/export parity
+on ten official SpeciesNet test images. The validator checks artifact hashes,
+finite output, top-1 agreement at Scrypted's default threshold, top-5 overlap,
+and maximum probability drift. CoreML package structure and model I/O are
+checked cross-platform; CoreML inference validation requires macOS.
+
+```sh
+python distill/validate_speciesnet_scrypted.py \
+  --images /path/to/cropped/validation/images \
+  --samples 20
+
+python -m unittest discover -s tests -v
+python -m compileall -q distill tests
 ```
 
-The list includes 327 birds, 52 mammals, 61 reptiles, and 89 amphibians that
-have at least 20 research-grade iNaturalist observations in North Carolina.
-Poultry is explicitly retained even when it falls below that threshold:
-chickens, turkeys, domestic and Muscovy ducks, domestic geese, guineafowl,
-quail, peafowl, pheasants, domestic pigeons, emus, and ostriches.
+Conversion parity is not site-specific accuracy. Before automating alerts,
+measure the model on reviewed crops from the installed cameras, including
+infrared/night, rain, blur, partial animals, and common local confusion pairs.
 
-The source catalog is [`species/north-carolina.json`](species/north-carolina.json).
+## Rebuild all backends
 
-## How the model is built
-
-The requested multi-stage system is used as a teacher to create training labels:
-
-```text
-North Carolina images and camera clips
-  -> MegaDetector V6 animal boxes
-  -> BioCLIP 2 classification against the North Carolina species list
-  -> IoU track association and temporal probability smoothing for video
-  -> unknown when the smoothed score is below the threshold
-  -> train a single YOLO species detector
-  -> export ONNX, OpenVINO, CoreML, and NCNN for Scrypted
-```
-
-Scrypted's current custom-model loader accepts a single stateless YOLO or
-ResNet graph. It cannot run network requests, change BioCLIP text embeddings,
-or preserve probability history inside a model invocation. Distillation keeps
-the full teacher pipeline in model creation and produces the one graph that the
-current plugin can load. At runtime the trained model directly returns species
-boxes, including an `unknown` class learned from uncertain teacher results.
-
-## Build workflow
-
-Use Python 3.11. Model weights and training data are written under ignored
-`work/` directories.
+Use Python 3.11. The build downloads the official checkpoint from
+`google/speciesnet/pyTorch/v4.0.3a/1` and preserves the upstream output order.
 
 ```sh
 python3.11 -m venv .venv
 .venv/bin/pip install -r requirements-build.txt
-
-# Rebuild the regional list from iNaturalist place 30 (North Carolina).
-.venv/bin/python distill/build_catalog.py \
-  --output species/north-carolina.json
-
-# Download CC0/CC-BY observations and retain attribution metadata.
-.venv/bin/python distill/download_inaturalist.py \
-  --catalog species/north-carolina.json \
-  --per-species 20
-
-# Download MDV6-yolov9-c.pt from the official MegaDetector V6 model record
-# into work/models/, then label public images.
-.venv/bin/python distill/label_images.py \
-  --catalog species/north-carolina.json
-
-# Add representative camera clips. This path performs temporal smoothing.
-.venv/bin/python distill/label_videos.py /path/to/camera-clips
-
-# Scrypted NVR event-frame exports can be added directly. Consecutive frames in
-# each event directory use the same temporal smoothing and unknown threshold.
-.venv/bin/python distill/label_scrypted_frames.py /path/to/scrypted-event-frames
-
-# Train and export the deployable single-stage model.
-.venv/bin/python distill/train_student.py
-.venv/bin/python distill/export_scrypted.py \
-  work/training/north-carolina-wildlife/weights/best.pt
+.venv/bin/python distill/speciesnet_scrypted.py --no-compression
 ```
 
-The downloader preserves existing image files and atomically checkpoints attribution
-after each completed species. Rerun the same command after an interruption to
-recover missing attribution and retry failed species requests. Public images
-without recovered attribution are not used by the labeling pipeline.
+`--no-compression` keeps the validated FP16/FP32 conversions. Experimental
+8-bit weight compression caused material confidence drift and is not used.
+Large artifacts are stored with Git LFS.
 
-For a bounded teacher smoke test, run `distill/label_images.py --limit 8
---output work/public-smoke-dataset` with the build environment's Python.
+## License and attribution
 
-The default teacher settings are:
-
-- MegaDetector V6 compact threshold: `0.25`
-- BioCLIP 2 unknown threshold: `0.25`
-- New-frame smoothing weight: `0.35`
-- Track association IoU: `0.30`
-- Student: YOLO11 Small at `640 × 640`
-
-The Scrypted frame importer can restrict known coop feeds to the configured
-poultry species. This prevents infrared chicken imagery from being assigned to
-visually similar wild birds while leaving other cameras on the full regional
-species list.
-
-## Add the exported model to Scrypted
-
-1. Install the Scrypted detection backend for the server: ONNX for NVIDIA,
-   OpenVINO for Intel/AMD, CoreML for Apple Silicon, or NCNN where appropriate.
-2. Open the backend plugin and choose **Create Device** under **Models**.
-3. Set the model name to `North Carolina Species Detector`.
-4. Enter this repository URL:
-   `https://github.com/tman9590/scrypted-animal-classifier`.
-5. Select the created model for the camera's Scrypted NVR object detection.
-
-The root [`config.json`](config.json) is the single source of truth for the
-input shape, YOLO format, complete class map, and files used by all four
-backends. Scrypted currently resolves a repository URL to
-`models/<backend>/config.json`, so `python3 distill/generate_configs.py`
-projects the root manifest into those small backend-specific compatibility
-files. Do not edit those projections by hand. Scientific names remain in the
-catalog and BioCLIP prompts but are not shown in Scrypted detections.
-
-After changing the root manifest, regenerate the compatibility views with:
-
-```sh
-python3 distill/generate_configs.py
-```
-
-If the species catalog or standard artifact names change, rebuild the root
-manifest explicitly with `python3 distill/generate_configs.py --refresh-root`.
-
-## Validation
-
-```sh
-python3 -m unittest discover -s tests -v
-python3 -m compileall -q distill tests
-```
-
-Before using notifications, validate the exported student against held-out
-day, night, infrared, rain, and motion-blurred clips from the installed
-cameras. See [`MODEL_CARD.md`](MODEL_CARD.md) for decision limits.
-
-## Licenses
-
-Repository code is Apache-2.0. BioCLIP 2 weights are MIT licensed. The requested
-MegaDetector V6 YOLOv10 compact weights are AGPL-3.0. Downloaded iNaturalist
-photos are restricted to CC0 and CC-BY, and the downloader writes an
-`attribution.csv` alongside them.
+Repository code is Apache-2.0. The converted model comes from Google's
+Apache-2.0 SpeciesNet project. See [MODEL_CARD.md](MODEL_CARD.md) and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for intended use, limitations,
+and upstream attribution.
