@@ -25,6 +25,12 @@ MODEL_FILES = {
         f"{MODEL_BASENAME}.bin",
     ],
 }
+UNIVERSAL_BACKEND_ORDER = ("ncnn", "onnx", "openvino", "coreml")
+UNIVERSAL_FILES = [
+    f"models/{backend}/{filename}"
+    for backend in UNIVERSAL_BACKEND_ORDER
+    for filename in MODEL_FILES[backend]
+]
 COMMON_KEYS = ("input_shape", "model", "mean", "std", "labels")
 
 
@@ -41,6 +47,9 @@ def common_config(labels: dict[str, str]) -> dict:
 
 def canonical_config(labels: dict[str, str]) -> dict:
     config = common_config(labels)
+    # NCNN selects the first .bin entry, so its binary must precede the
+    # OpenVINO and Core ML binaries in the universal manifest.
+    config["files"] = UNIVERSAL_FILES
     config["backends"] = {
         backend: {"files": files} for backend, files in MODEL_FILES.items()
     }
@@ -59,6 +68,8 @@ def validate_canonical(config: dict) -> None:
         backend: {"files": files} for backend, files in MODEL_FILES.items()
     }:
         raise ValueError("Canonical backend file map is missing or out of date")
+    if config.get("files") != UNIVERSAL_FILES:
+        raise ValueError("Universal backend file list is missing or out of date")
 
 
 def write_json(path: Path, value: dict) -> None:

@@ -36,7 +36,12 @@ for NVR search and notifications.
    or NCNN.
 2. Open that plugin, find **Models**, and choose **Create Device**.
 3. Name it `SpeciesNet Animals`.
-4. Paste the configuration URL for the plugin you opened:
+4. Paste this universal configuration URL for any of the four plugins:
+
+   `https://media.githubusercontent.com/media/tman9590/animal-classifier/main/config.json`
+
+   The universal manifest contains every backend. To download only the files
+   needed by the plugin you opened, use its smaller backend-specific manifest:
 
    - ONNX: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/onnx/config.json`
    - OpenVINO: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/openvino/config.json`
@@ -47,10 +52,11 @@ for NVR search and notifications.
 6. Start with a classification threshold of `0.50`, then review real day and
    night events before using species labels in alerts.
 
-Use the `media.githubusercontent.com` URL exactly as shown. The weights are in
-Git LFS; GitHub's ordinary raw URLs return tiny LFS pointer files instead of the
-model bytes. Each backend directory contains its own manifest and only the
-files that its loader understands.
+Use a `media.githubusercontent.com` URL exactly as shown. The manifests and
+weights are in Git LFS; GitHub's ordinary raw URLs return tiny LFS pointer files
+instead of their contents. Scrypted downloads every file in the universal
+manifest, while each backend-specific manifest downloads only the files that
+its loader needs.
 
 ## Validation
 
