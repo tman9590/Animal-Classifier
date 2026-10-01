@@ -38,25 +38,24 @@ for NVR search and notifications.
 3. Name it `SpeciesNet Animals`.
 4. Paste this universal configuration URL for any of the four plugins:
 
-   `https://media.githubusercontent.com/media/tman9590/animal-classifier/main/config.json`
+   [Universal `config.json`](https://github.com/tman9590/Animal-Classifier/raw/refs/heads/main/config.json)
 
    The universal manifest contains every backend. To download only the files
    needed by the plugin you opened, use its smaller backend-specific manifest:
 
-   - ONNX: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/onnx/config.json`
-   - OpenVINO: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/openvino/config.json`
-   - CoreML: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/coreml/config.json`
-   - NCNN: `https://media.githubusercontent.com/media/tman9590/scrypted-animal-classifier/main/models/ncnn/config.json`
+   - ONNX: `https://github.com/tman9590/Animal-Classifier/raw/refs/heads/main/models/onnx/config.json`
+   - OpenVINO: `https://github.com/tman9590/Animal-Classifier/raw/refs/heads/main/models/openvino/config.json`
+   - CoreML: `https://github.com/tman9590/Animal-Classifier/raw/refs/heads/main/models/coreml/config.json`
+   - NCNN: `https://github.com/tman9590/Animal-Classifier/raw/refs/heads/main/models/ncnn/config.json`
 
 5. Select the new device as the camera's **Animal Classifier** in Scrypted NVR.
 6. Start with a classification threshold of `0.50`, then review real day and
    night events before using species labels in alerts.
 
-Use a `media.githubusercontent.com` URL exactly as shown. The manifests and
-weights are in Git LFS; GitHub's ordinary raw URLs return tiny LFS pointer files
-instead of their contents. Scrypted downloads every file in the universal
-manifest, while each backend-specific manifest downloads only the files that
-its loader needs.
+Use a `/raw/refs/heads/main/` URL exactly as shown. The manifests and weights
+are in Git LFS, and this GitHub route resolves their actual contents. Scrypted
+downloads every file in the universal manifest, while each backend-specific
+manifest downloads only the files that its loader needs.
 
 ## Validation
 
