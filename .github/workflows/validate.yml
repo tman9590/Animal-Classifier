@@ -11,6 +11,8 @@ jobs:
       GIT_LFS_SKIP_SMUDGE: "1"
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch lightweight LFS manifests
+        run: git lfs pull --include="models/*/config.json" --exclude=""
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
