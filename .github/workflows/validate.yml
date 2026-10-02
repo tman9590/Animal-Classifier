@@ -27,10 +27,10 @@ jobs:
           root = json.loads(Path("config.json").read_text())
           assert root["model"] == "resnet"
           assert root["input_shape"] == [1, 3, 480, 480]
-          assert len(root["labels"]) == 2498
+          assert len(root["labels"]) == 457
           assert set(root["backends"]) == {"coreml", "ncnn", "onnx", "openvino"}
-          assert root["files"][0] == "models/ncnn/speciesnet-v4.0.3a.ncnn.bin"
-          assert len(root["files"]) == 8
+          assert root["files"][0] == "models/ncnn/speciesnet-v4.0.3a-north-carolina.ncnn.bin"
+          assert len(root["files"]) == 6
           for backend, metadata in root["backends"].items():
               config = json.loads((Path("models") / backend / "config.json").read_text())
               assert config["model"] == root["model"]

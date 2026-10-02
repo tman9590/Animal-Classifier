@@ -24,7 +24,10 @@ class GenerateConfigsTests(unittest.TestCase):
         config = canonical_config(labels)
         self.assertEqual(config["files"], UNIVERSAL_FILES)
         binary_files = [name for name in config["files"] if name.endswith(".bin")]
-        self.assertEqual(binary_files[0], "models/ncnn/speciesnet-v4.0.3a.ncnn.bin")
+        self.assertEqual(
+            binary_files[0],
+            "models/ncnn/speciesnet-v4.0.3a-north-carolina.ncnn.bin",
+        )
 
     def test_backend_projections_use_relative_artifact_paths(self):
         labels = {str(index): f"species {index}" for index in range(2498)}

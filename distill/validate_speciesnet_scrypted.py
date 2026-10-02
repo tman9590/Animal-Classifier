@@ -12,7 +12,16 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from speciesnet_scrypted import DEFAULT_HANDLE, IMAGE_SIZE, build_adapter, load_checkpoint
+from speciesnet_scrypted import (
+    DEFAULT_HANDLE,
+    IMAGE_SIZE,
+    REGION_ADMIN1,
+    REGION_COUNTRY,
+    build_adapter,
+    load_checkpoint,
+    load_regional_selection,
+    prune_classifier_head,
+)
 
 
 ROOT = Path(__file__).parents[1]
@@ -66,8 +75,9 @@ def main() -> None:
 
     import torch
 
-    _, info, labels, checkpoint = load_checkpoint(args.handle, args.model_dir)
-    reference_model = build_adapter(checkpoint).eval()
+    source, info, source_labels, checkpoint = load_checkpoint(args.handle, args.model_dir)
+    indices, labels = load_regional_selection(source, info, source_labels)
+    reference_model = build_adapter(prune_classifier_head(checkpoint, indices)).eval()
     runners = {}
     reports = {}
 
@@ -88,19 +98,15 @@ def main() -> None:
             compiled = ov.Core().compile_model(str(xml), "CPU")
             runners[backend] = lambda tensor, model=compiled: model(tensor)[0]
         elif backend == "coreml":
-            manifest = next(path for path in files if path.name == "Manifest.json")
+            model_path = next(path for path in files if path.suffix == ".mlmodel")
             if sys.platform == "darwin":
                 import coremltools as ct
 
-                model = ct.models.MLModel(str(manifest.parent))
+                model = ct.models.MLModel(str(model_path))
                 spec = model.get_spec()
             else:
                 from coremltools.proto import Model_pb2
 
-                manifest_data = json.loads(manifest.read_text())
-                root_id = manifest_data["rootModelIdentifier"]
-                model_relative = manifest_data["itemInfoEntries"][root_id]["path"]
-                model_path = manifest.parent / "Data" / model_relative
                 spec = Model_pb2.Model()
                 spec.ParseFromString(model_path.read_bytes())
             input_name = spec.description.input[0].name
@@ -111,7 +117,16 @@ def main() -> None:
                 )
             input_shape = list(spec.description.input[0].type.multiArrayType.shape)
             output_shape = list(spec.description.output[0].type.multiArrayType.shape)
-            if input_shape != [1, 3, 480, 480] or output_shape != [1, 2498]:
+            if not output_shape and spec.WhichOneof("Type") == "neuralNetwork":
+                regional_heads = [
+                    layer for layer in spec.neuralNetwork.layers
+                    if layer.WhichOneof("layer") == "innerProduct"
+                    and layer.innerProduct.outputChannels == len(labels)
+                    and "logits" in layer.output
+                ]
+                if regional_heads:
+                    output_shape = [1, len(labels)]
+            if input_shape != [1, 3, 480, 480] or output_shape != [1, len(labels)]:
                 raise ValueError(
                     f"coreml: unexpected tensor shapes: {input_shape}, {output_shape}"
                 )
@@ -205,10 +220,12 @@ def main() -> None:
         "passed": True,
         "source_version": info["version"],
         "class_count": len(labels),
+        "source_class_count": len(source_labels),
+        "region": {"country": REGION_COUNTRY, "admin1": REGION_ADMIN1},
         "input_shape": [1, 3, IMAGE_SIZE, IMAGE_SIZE],
         "sample_count": len(indexes),
         "backends": reports,
-        "scope": "Artifact integrity and source/export inference parity; not site-specific species accuracy.",
+        "scope": "Artifact integrity and source/export inference parity for the North Carolina geofenced taxonomy; not site-specific species accuracy.",
     }
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(result, indent=2) + "\n")

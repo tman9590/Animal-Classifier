@@ -16,7 +16,24 @@ from generate_configs import MODEL_FILES, canonical_config, write_json, write_pr
 ROOT = Path(__file__).parents[1]
 DEFAULT_HANDLE = "google/speciesnet/pyTorch/v4.0.3a/1"
 IMAGE_SIZE = 480
-MODEL_BASENAME = "speciesnet-v4.0.3a"
+MODEL_BASENAME = "speciesnet-v4.0.3a-north-carolina"
+REGION_COUNTRY = "USA"
+REGION_ADMIN1 = "NC"
+SAFETY_LABELS = {"blank", "human", "vehicle"}
+LIVESTOCK_LABELS = {
+    "domestic cattle",
+    "domestic chicken",
+    "domestic donkey",
+    "domestic goat",
+    "domestic goose",
+    "domestic horse",
+    "domestic mule",
+    "domestic pig",
+    "domestic sheep",
+    "domestic water buffalo",
+    "helmeted guineafowl",
+    "llama",
+}
 
 
 def parse_speciesnet_labels(lines: Iterable[str]) -> list[str]:
@@ -56,6 +73,82 @@ def load_checkpoint(handle: str, model_dir: Path | None):
     labels = parse_speciesnet_labels((root / info["classifier_labels"]).read_text().splitlines())
     model = torch.load(root / info["classifier"], map_location="cpu", weights_only=False).eval()
     return root, info, labels, model
+
+
+def should_geofence(rule: dict | None, country: str, admin1: str) -> bool:
+    """Mirror SpeciesNet's country/admin1 allow/block geofence semantics."""
+    if not rule:
+        return False
+    allow = rule.get("allow")
+    if allow is not None:
+        if country not in allow:
+            return True
+        states = allow[country]
+        if states and admin1 not in states:
+            return True
+    block = rule.get("block")
+    if block is not None and country in block:
+        states = block[country]
+        if not states or admin1 in states:
+            return True
+    return False
+
+
+def select_regional_indices(lines: Iterable[str], geofence: dict, country: str, admin1: str) -> list[int]:
+    """Select locally plausible species, their ancestors, and safety labels."""
+    rows = []
+    for index, raw in enumerate(lines):
+        fields = raw.strip().split(";")
+        if len(fields) != 7:
+            raise ValueError(f"SpeciesNet label row {index + 1} has {len(fields)} fields, expected 7")
+        rows.append(fields)
+
+    species = set()
+    for fields in rows:
+        taxonomy = ";".join(fields[1:6])
+        rule = geofence.get(taxonomy)
+        # A state-scoped model should fail closed when the upstream geofence
+        # has no range rule for a species.
+        locally_allowed = rule is not None and not should_geofence(rule, country, admin1)
+        livestock = fields[6].casefold() in LIVESTOCK_LABELS
+        if fields[5] and (locally_allowed or livestock):
+            species.add(taxonomy)
+    selected = []
+    for index, fields in enumerate(rows):
+        taxonomy = ";".join(fields[1:6])
+        common_name = fields[6].casefold()
+        if fields[5]:
+            keep = taxonomy in species
+        else:
+            prefix = taxonomy.rstrip(";")
+            keep = common_name in SAFETY_LABELS or bool(prefix) and any(
+                item == prefix or item.startswith(prefix + ";") for item in species
+            )
+        if keep:
+            selected.append(index)
+    return selected
+
+
+def load_regional_selection(source: Path, info: dict, labels: list[str]) -> tuple[list[int], list[str]]:
+    raw_lines = (source / info["classifier_labels"]).read_text().splitlines()
+    geofence = json.loads((source / info["geofence"]).read_text())
+    indices = select_regional_indices(raw_lines, geofence, REGION_COUNTRY, REGION_ADMIN1)
+    return indices, [labels[index] for index in indices]
+
+
+def prune_classifier_head(model, indices: list[int]):
+    """Prune the source dense head so every backend natively emits the region."""
+    import torch
+
+    selected = torch.tensor(indices, dtype=torch.long)
+    initializers = model.initializers
+    initializers.onnx_initializer_135 = torch.index_select(
+        initializers.onnx_initializer_135, 1, selected
+    ).contiguous()
+    initializers.onnx_initializer_136 = torch.index_select(
+        initializers.onnx_initializer_136, 0, selected
+    ).contiguous()
+    return model
 
 
 def build_adapter(model):
@@ -109,27 +202,20 @@ def export_coreml(model, example, directory: Path, compress: bool) -> list[Path]
     import torch
 
     directory.mkdir(parents=True, exist_ok=True)
-    package = directory / f"{MODEL_BASENAME}.mlpackage"
-    if package.exists():
-        shutil.rmtree(package)
+    destination = directory / f"{MODEL_BASENAME}.mlmodel"
     traced = torch.jit.trace(model, example, strict=True)
     converted = ct.convert(
         traced,
-        convert_to="mlprogram",
+        convert_to="neuralnetwork",
         inputs=[ct.TensorType(name="input", shape=tuple(example.shape))],
         outputs=[ct.TensorType(name="logits")],
     )
     if compress:
-        from coremltools.optimize.coreml import OpPalettizerConfig, OptimizationConfig, palettize_weights
+        from coremltools.models.neural_network.quantization_utils import quantize_weights
 
-        converted = palettize_weights(
-            converted,
-            OptimizationConfig(
-                global_config=OpPalettizerConfig(mode="kmeans", nbits=8, num_kmeans_workers=1)
-            ),
-        )
-    converted.save(str(package))
-    return [path for path in sorted(package.rglob("*")) if path.is_file()]
+        converted = quantize_weights(converted, nbits=8)
+    converted.save(str(destination))
+    return [destination]
 
 
 def export_ncnn(onnx_path: Path, directory: Path) -> list[Path]:
@@ -174,10 +260,11 @@ def main() -> None:
 
     import torch
 
-    source, info, labels, checkpoint = load_checkpoint(args.handle, args.model_dir)
-    if len(labels) != 2498:
-        raise ValueError(f"Unexpected SpeciesNet class count: {len(labels)}")
-    model = build_adapter(checkpoint)
+    source, info, source_labels, checkpoint = load_checkpoint(args.handle, args.model_dir)
+    if len(source_labels) != 2498:
+        raise ValueError(f"Unexpected SpeciesNet class count: {len(source_labels)}")
+    indices, labels = load_regional_selection(source, info, source_labels)
+    model = build_adapter(prune_classifier_head(checkpoint, indices))
     torch.manual_seed(7)
     example = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
     with torch.inference_mode():
@@ -211,6 +298,9 @@ def main() -> None:
         "version": info["version"],
         "handle": args.handle,
         "class_count": len(labels),
+        "source_class_count": len(source_labels),
+        "region": {"country": REGION_COUNTRY, "admin1": REGION_ADMIN1},
+        "geofence": info["geofence"],
         "input_shape": list(example.shape),
         "backends": sorted(MODEL_FILES),
         "config": str(args.config),

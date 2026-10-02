@@ -1,6 +1,6 @@
-# SpeciesNet Animal Classifier for Scrypted
+# North Carolina SpeciesNet Animal Classifier for Scrypted
 
-This repository packages Google's **SpeciesNet v4.0.3a** crop classifier for
+This repository packages a **North Carolina-scoped SpeciesNet v4.0.3a** crop classifier for
 every Scrypted backend that currently supports repository-based custom models:
 
 | Scrypted backend | Typical hardware | Artifact |
@@ -23,8 +23,15 @@ already detected animal crop.
 SpeciesNet is the better fit: Google trained it on more than 65 million
 geographically diverse camera-trap images. The v4.0.3a “always crop” classifier
 expects a tightly cropped 480 × 480 animal image, matching the crop Scrypted
-passes to an animal classifier. It returns 2,498 taxonomy labels, including
-2,066 species plus useful higher taxa, `blank`, `human`, and `vehicle`.
+passes to an animal classifier. The upstream network returns 2,498 taxonomy
+labels. This build compiles Google's official `USA`/`NC` geofence into the
+exported graph, retaining 457 outputs: 298 locally plausible or explicitly
+supported livestock species,
+useful higher-taxon fallbacks, and the `blank`, `human`, and `vehicle` safety
+classes. Species without a published upstream range rule are excluded unless
+they are common livestock. The livestock override includes cattle, chickens,
+donkeys, goats, geese, horses, llamas, mules, pigs, sheep, water buffalo, and
+helmeted guineafowl.
 
 This is a second-stage classifier. Scrypted's selected object detector still
 finds the animal and supplies the crop; SpeciesNet adds the species label used
@@ -35,7 +42,7 @@ for NVR search and notifications.
 1. Install the detector plugin suited to the server: ONNX, OpenVINO, CoreML,
    or NCNN.
 2. Open that plugin, find **Models**, and choose **Create Device**.
-3. Name it `SpeciesNet Animals`.
+3. Name it `SpeciesNet NC Animals`.
 4. Paste this universal configuration URL for any of the four plugins:
 
    [Universal `config.json`](https://github.com/tman9590/Animal-Classifier/raw/refs/heads/main/config.json)
@@ -60,7 +67,7 @@ manifest downloads only the files that its loader needs.
 ## Validation
 
 The checked-in ONNX, OpenVINO, and NCNN artifacts passed source/export parity
-on ten official SpeciesNet test images. The validator checks artifact hashes,
+on ten held-out animal crops. The validator checks artifact hashes,
 finite output, top-1 agreement at Scrypted's default threshold, top-5 overlap,
 and maximum probability drift. CoreML package structure and model I/O are
 checked cross-platform; CoreML inference validation requires macOS.
@@ -74,14 +81,16 @@ python -m unittest discover -s tests -v
 python -m compileall -q distill tests
 ```
 
-Conversion parity is not site-specific accuracy. Before automating alerts,
+The geographic prior removes implausible outputs; it is not a North Carolina
+accuracy benchmark. Before automating alerts,
 measure the model on reviewed crops from the installed cameras, including
 infrared/night, rain, blur, partial animals, and common local confusion pairs.
 
 ## Rebuild all backends
 
 Use Python 3.11. The build downloads the official checkpoint from
-`google/speciesnet/pyTorch/v4.0.3a/1` and preserves the upstream output order.
+`google/speciesnet/pyTorch/v4.0.3a/1`, applies its official North Carolina
+geofence, and preserves the relative order of retained outputs.
 
 ```sh
 python3.11 -m venv .venv

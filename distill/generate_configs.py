@@ -8,12 +8,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).parents[1]
-MODEL_BASENAME = "speciesnet-v4.0.3a"
+MODEL_BASENAME = "speciesnet-v4.0.3a-north-carolina"
 MODEL_FILES = {
     "coreml": [
-        f"{MODEL_BASENAME}.mlpackage/Data/com.apple.CoreML/model.mlmodel",
-        f"{MODEL_BASENAME}.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
-        f"{MODEL_BASENAME}.mlpackage/Manifest.json",
+        f"{MODEL_BASENAME}.mlmodel",
     ],
     "ncnn": [
         f"{MODEL_BASENAME}.ncnn.bin",
@@ -62,8 +60,8 @@ def validate_canonical(config: dict) -> None:
     if config.get("model") != "resnet":
         raise ValueError("Scrypted must parse SpeciesNet as a resnet classifier")
     labels = config.get("labels", {})
-    if len(labels) != 2498 or list(labels) != [str(i) for i in range(2498)]:
-        raise ValueError("Expected the ordered 2,498-label SpeciesNet taxonomy")
+    if not labels or list(labels) != [str(i) for i in range(len(labels))]:
+        raise ValueError("Expected a non-empty, contiguously indexed regional taxonomy")
     if config.get("backends") != {
         backend: {"files": files} for backend, files in MODEL_FILES.items()
     }:
